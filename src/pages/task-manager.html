@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="../assets/css/output.css" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/2a0b4f88de.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Task Manager</title>
+    <!-- <script src="https://cdn.tailwindcss.com"></script> -->
+</head>
+<body class="font-sans dark:bg-gray-800">
+    <!-- Empty header that will be filled by headerLoader.js -->
+    <header></header>
+
+        <!-- Main Container -->
+        <div class="container mx-auto mt-40 p-4 bg-white  max-w-4xl  dark:bg-gray-800 mb-96 border border-gray-200 rounded-md">
+            <!-- Header -->
+            <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div class="w-full md:w-2/3">
+                    <h1 class="text-2xl font-bold mt-3 md:mt-5 dark:text-white">Task Manager</h1>
+                    <p class="text-gray-600 dark:text-gray-300">Organize and track your tasks to stay productive</p>
+                </div>
+                <div class="w-full md:w-1/3 text-right mt-4 md:mt-0 ">
+                    <!-- Button to Open Modal -->
+                    <button class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-700 w-full md:w-auto dark:bg-teal-300 dark:text-black" onclick="toggleModal('myModal')">
+                        + Add Task
+                    </button>
+                </div>
+            </div>
+    
+            <!-- Progress Bar -->
+            <div class="flex justify-between mt-2 dark:text-white">
+                <span>Progress: <span id="progress-percentage">0%</span></span>
+                <span id="tasks-completed">0 of 0 tasks completed</span>
+            </div>
+            <div class="h-2 bg-gray-200 rounded mt-2 dark:text-white">
+                <div id="progress-bar" class="h-2 bg-blue-600 rounded" style="width: 0%;"></div>
+            </div>
+            <div class="alert alert-secondary mt-3 text-center text-gray-500 dark:text-white" id="no_tasks">
+                No tasks started yet
+            </div>
+    
+            <!-- Filters -->
+            <div class="flex flex-wrap gap-4 mt-4">
+                <select id="filterTasks" class="form-select border-gray-300 rounded w-1/2 md:w-auto p-1.5 dark:bg-gray-500 dark:text-white" onchange="filterTasks()">
+                    <option value="all">Show All</option>
+                    <option value="completed">Show Completed</option>
+                    <option value="incomplete">Show Incomplete</option>
+                </select>
+    
+                <select id="sortTasks" class="form-select border-gray-300 rounded w-1/2 md:w-auto p-1.5 dark:bg-gray-500 dark:text-white" onchange="sortTasks()">
+                    <option value="name">Sort by Name</option>
+                    <option value="date">Sort by Due Date</option>
+                    <option value="priority">Sort by Priority</option>
+                </select>
+            </div>
+    
+            <!-- Task List -->
+            <div id="taskList" class="mt-4 space-y-4">
+            </div>
+        </div>
+    
+        <!-- Modal -->
+        <div id="myModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden ">
+            <div id="draggable" class="bg-white w-full max-w-md p-6 rounded-lg shadow relative dark:bg-gray-800">
+                <!-- Modal Header -->
+                <div class="flex justify-between items-center border-b pb-4 ">
+                    <div>
+                        <h2 class="text-xl font-bold dark:text-white">Add New Task</h2>
+                        <p class="text-gray-600 dark:text-gray-300">Create a new task with details. Click save when you're done.</p>
+                    </div>
+                    <button class="text-gray-500 hover:text-gray-800" onclick="toggleModal('myModal')">&times;</button>
+                </div>
+    
+                <!-- Modal Form -->
+                <form class="space-y-4 mt-4" id="form">
+                    <div>
+                        <label for="title" class="block text-gray-700 font-medium dark:text-white">Title</label>
+                        <input type="text" id="title" class="form-input w-full border-gray-300 rounded p-1.5" placeholder="Title" required>
+                    </div>
+                    <div>
+                        <label for="description" class="block text-gray-700 font-medium dark:text-white">Description</label>
+                        <textarea id="description" class="form-input w-full border-gray-300 rounded p-1.5" placeholder="Description"></textarea>
+                    </div>
+                    <div>
+                        <label for="date" class="block text-gray-700 font-medium dark:text-white">Date</label>
+                        <input type="date" id="date" class="form-input w-full border-gray-300 rounded p-1.5">
+                    </div>
+                    <div>
+                        <label for="priority" class="block text-gray-700 font-medium dark:text-white">Priority</label>
+                        <select id="priority" class="form-select w-full border-gray-300 rounded ">
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                    <div class="flex justify-end space-x-4">
+                        <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-400" id="save_task">
+                            Save Task
+                        </button>
+                        <button type="button" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-400" onclick="toggleModal('myModal')">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    
+    
+    
+    
+    
+    
+    
+            <!-- alert -->
+            <div id="alert-error" class="hidden fixed top-4 left-1/2 transform -translate-x-1/2 w-96 p-4 mb-4 text-red-800 border-2 border-red-300 rounded-lg bg-red-50 shadow-lg mt-10" role="alert">
+                <div class="flex items-center">
+                    <svg class="flex-shrink-0 w-5 h-5 me-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM10 15a1 1 0 1 1 0-2 1 1 0 0 1 0 2Zm1-4a1 1 0 0 1-2 0V6a1 1 0 0 1 2 0v5Z"/>
+                    </svg>
+                    <h3 class="text-lg font-semibold">Required Fields Missing</h3>
+                    <button type="button" class="ms-auto -mx-1.5 -my-1.5" onclick="document.getElementById('alert-error').classList.add('hidden')">
+                        <span class="sr-only">Close</span>
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="mt-2 mb-4 text-sm">
+                    Please fill in all required fields before submitting. Make sure to provide:
+                    <ul class="list-disc list-inside mt-2">
+                        <li>Task title</li>
+                        <li>Description</li>
+                        <li>Due date</li>
+                        <li>Priority level</li>
+                    </ul>
+                </div>
+                <div class="flex justify-end">
+                    <button type="button" 
+                            class="text-red-800 bg-transparent border border-red-800 hover:bg-red-900 hover:text-white focus:ring-4 focus:outline-none focus:ring-red-200 font-medium rounded-lg text-xs px-3 py-1.5 text-center transition-colors duration-200"
+                            onclick="document.getElementById('alert-error').classList.add('hidden')">
+                        Dismiss
+                    </button>
+                </div>
+            </div>
+   
+    <footer></footer>
+
+    <script>
+        const taskList = document.getElementById('taskList');
+
+    // This function controls the visibility of a modal dialog
+    function toggleModal(modalId) {
+        // Get the modal element by its ID
+        const modal = document.getElementById(modalId);
+        // Toggle the 'hidden' class which shows/hides the modal
+        // If hidden class exists, it will be removed (showing the modal)
+        // If hidden class doesn't exist, it will be added (hiding the modal)
+        modal.classList.toggle("hidden");
+    }
+
+    function addTask(title, description, date, priority) {
+        const task = document.createElement('div');
+        task.classList.add(
+            'task-item', // Add a common class for all tasks
+            'flex',
+            'items-start',
+            'bg-white',
+            'p-4',
+            'rounded-lg',
+            'shadow-md',
+            'mb-2',
+            'border',
+            'border-gray-200'
+        );
+        task.dataset.name = title.toLowerCase();
+        task.dataset.date = date;
+        task.dataset.priority = priority;
+        task.dataset.completed = false;
+
+        task.innerHTML = `
+            <div class="mr-4">
+                <input
+                    type="checkbox"
+                    class="mt-2 w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    onchange="toggleTaskCompletion(this)"
+                />
+            </div>
+            <div class="flex-grow">
+                <h3 class="text-lg font-semibold task-title">${title}</h3>
+                <p class="text-gray-500">${description}</p>
+                <div class="flex items-center space-x-4 text-sm text-gray-400">
+                    <div class="flex items-center">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke-width="2"
+                            stroke="currentColor"
+                            class="w-4 h-4 mr-1 text-gray-400"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                            />
+                        </svg>
+                        <span>${date}</span>
+                    </div>
+                    <span class="font-medium ${
+                        priority === 'high'
+                            ? 'text-red-500'
+                            : priority === 'medium'
+                            ? 'text-yellow-500'
+                            : 'text-green-500'
+                    }">${priority}</span>
+                </div>
+            </div>
+        `;
+
+        taskList.appendChild(task);
+    }
+
+    document.getElementById('save_task').addEventListener('click', (event) => {
+        event.preventDefault(); // Prevent form submission
+        const titleInput = document.getElementById('title').value;
+        const descriptionInput = document.getElementById('description').value;
+        const dateInput = document.getElementById('date').value;
+        const priorityInput = document.getElementById('priority').value;
+
+        if (!titleInput || !descriptionInput || !dateInput || !priorityInput) {
+            document.getElementById('alert-error').classList.toggle('hidden');
+            return;
+        }
+
+        addTask(titleInput, descriptionInput, dateInput, priorityInput);
+
+        // Reset the form fields to their default values
+        document.getElementById('form').reset();
+        // Close the modal popup window
+        toggleModal('myModal'); 
+        // Recalculate and update the progress bar and task completion stats
+        updateProgress();
+    });
+
+    function updateProgress() {
+        // Get total number of tasks
+        let totalTasks = taskList.children.length;
+        
+        // Get number of checked checkboxes
+        let finishedTasks = document.querySelectorAll('input[type="checkbox"]:checked').length;
+        
+        // Calculate percentage
+        let percent = 0;
+        if(totalTasks > 0) {
+            percent = Math.round((finishedTasks / totalTasks) * 100);
+        }
+        
+        // Update text displays
+        document.getElementById('progress-percentage').textContent = percent + '%';
+        document.getElementById('tasks-completed').textContent = finishedTasks + ' of ' + totalTasks + ' tasks completed';
+        
+        // Update progress bar width
+        document.getElementById('progress-bar').style.width = percent + '%';
+    }
+
+    function toggleTaskCompletion(checkbox) {
+        const task = checkbox.closest('.task-item');
+        const taskTitle = task.querySelector('.task-title');
+
+        task.dataset.completed = checkbox.checked;
+
+        if (checkbox.checked) {
+            taskTitle.style.textDecoration = 'line-through';
+            task.style.opacity = '0.6';
+        } else {
+            taskTitle.style.textDecoration = 'none';
+            task.style.opacity = '1';
+        }
+
+        updateProgress();
+    }
+
+    function filterTasks() {
+        const filter = document.getElementById('filterTasks').value;
+        const tasks = document.querySelectorAll('.task-item');
+
+        tasks.forEach(task => {
+            const isCompleted = task.dataset.completed === 'true';
+
+            if (
+                filter === 'all' ||
+                (filter === 'completed' && isCompleted) ||
+                (filter === 'incomplete' && !isCompleted)
+            ) {
+                task.style.display = '';
+            } else {
+                task.style.display = 'none';
+            }
+        });
+    }
+
+    function sortTasks() {
+        const sortOption = document.getElementById('sortTasks').value;
+        const tasks = [...document.querySelectorAll('.task-item')];
+
+        tasks.sort((a, b) => {
+            if (sortOption === 'name') {
+                return a.dataset.name.localeCompare(b.dataset.name);
+            } else if (sortOption === 'date') {
+                return new Date(a.dataset.date) - new Date(b.dataset.date);
+            } else if (sortOption === 'priority') {
+                const priorityMap = { low: 1, medium: 2, high: 3 };
+                return priorityMap[b.dataset.priority] - priorityMap[a.dataset.priority];
+            }
+        });
+
+        tasks.forEach(task => taskList.appendChild(task));
+    }
+
+    taskList.addEventListener('change', (event) => {
+        const tab = ["Keep up the excellent work! 🌟", "You're crushing your goals! 💪", "Making great strides forward! 🚀", "Every task completed is progress! ✨", "You're building amazing habits! 📈"];
+        const randomIndex = Math.floor(Math.random() * tab.length);
+        document.getElementById('no_tasks').innerText = tab[randomIndex];
+        updateProgress();
+    });
+</script>
+    <script src="../scripts/headerLoader.js"></script>
+    <script src="../scripts/loadFooter.js"></script>
+    <script src="../scripts/darkMode.js"></script>
+
+   
+</body>
+</html>
